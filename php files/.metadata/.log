@@ -1,0 +1,10 @@
+!SESSION 2010-09-02 16:52:23.448 -----------------------------------------------
+eclipse.buildId=I20100608-0911
+java.version=1.6.0_21
+java.vendor=Sun Microsystems Inc.
+BootLoader constants: OS=win32, ARCH=x86, WS=win32, NL=en_PH
+Framework arguments:  -product org.eclipse.epp.package.php.product
+Command-line arguments:  -os win32 -ws win32 -arch x86 -product org.eclipse.epp.package.php.product
+
+!ENTRY org.eclipse.epp.usagedata.recording 1 0 2010-09-02 16:53:47.208
+!MESSAGE Usage data uploaded to http://udc.eclipse.org/upload.php in 6670 milliseconds.

@@ -1,0 +1,6 @@
+INDEX VERSION 1.121+C:\Program Files\Apache Software Foundation\Apache2.2\htdocs\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
+970838287.index
+4199163245.index
+26466182.index
+2025060370.index
+1125240903.index

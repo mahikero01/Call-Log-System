@@ -1,0 +1,25 @@
+#header{
+	font-family: "Arial", sans-serif;
+	font-weight: bold;
+	font-size: 30px;
+	text-align: center;
+}
+#content{
+	font-family: "Arial", sans-serif;
+	font-weight: bold;
+	font-size: 20px;
+}
+.tabdef{
+	position: absolute; 
+	left: 40px;
+}
+
+.tabcontent{
+	position: absolute;
+	left: 450px
+}
+
+.tabdefuser{
+	position: absolute; 
+	left: 100px;
+}

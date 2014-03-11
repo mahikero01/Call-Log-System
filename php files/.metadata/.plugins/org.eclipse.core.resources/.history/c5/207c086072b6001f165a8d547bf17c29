@@ -1,0 +1,131 @@
+<?php require_once ('database.php');?>
+<?php require_once ('session.php');?>
+<?php
+//class for handling call logs much powerfull than class CallLog
+class AllCallRecord {
+	public $all_made_calls = array();
+	
+	//count the number of record
+	public function number_of_record($date, $operator) {
+		global $database;
+		
+//		$sql = "SELECT * FROM call_log_tb ";
+//		$sql .= "WHERE call_date >= '".$date."-01' ";
+//		$sql .= "AND call_date <= '".$date."-31'";
+		$sql = "SELECT a.call_log_id, a.call_date, a.call_finish, a.call_duration, ";
+		$sql .= "a.total_call_cost, b.tele_number, c.local_number, d.location_desc ,a.audit_ack ";
+		$sql .= "FROM call_log_tb a, tele_number_tb b, user_info_tb c, location_tb d ";
+		$sql .= "WHERE a.tele_number_id = b.tele_number_id ";
+		$sql .= "AND a.user_info_id = c.user_info_id ";
+		$sql .= "AND b.location_id = d.location_id ";		
+		$sql .= "AND a.call_date >= '".$date."-01' ";
+		$sql .= "AND a.call_date <= '".$date."-31' ";
+		$sql .= "AND d.call_type_id ".$operator." 3 ";
+		$result_set = $database->query($sql);
+		
+		return $database->num_rows($result_set);
+	}
+	
+	//get all important record
+	public function get_all_data($operator, $date, $offset) {
+		global $database;
+		
+		$sql = "SELECT a.call_log_id, a.call_date, a.call_finish, a.call_duration, ";
+		$sql .= "a.total_call_cost, b.tele_number, c.local_number, d.location_desc ,a.audit_ack ";
+		$sql .= "FROM call_log_tb a, tele_number_tb b, user_info_tb c, location_tb d ";
+		$sql .= "WHERE a.tele_number_id = b.tele_number_id ";
+		$sql .= "AND a.user_info_id = c.user_info_id ";
+		$sql .= "AND b.location_id = d.location_id ";		
+		$sql .= "AND a.call_date >= '".$date."-01' ";
+		$sql .= "AND a.call_date <= '".$date."-31' ";
+		$sql .= "AND d.call_type_id ".$operator." 3 ";
+		$sql .= "ORDER BY a.call_date, a.call_finish ASC LIMIT 20 ";
+		$sql .= "OFFSET ".$offset;
+		$result_set = $database->query($sql);
+		
+		while ($row = mysql_fetch_array($result_set)) {
+			$this->all_made_calls[] = $row;
+		}
+	}	
+	
+	//get user dat for updating the record on db returns false if error encountered
+	public function update_call_record($log_id, $price,  $pay) {
+		global $database;
+		global $ses;
+		
+		//check if data is valid input
+		if (!is_numeric($price)) {
+			$ses->message('Pleae enter numeric value only');	
+			
+		} else {
+			$call_log_id = (int)$log_id;
+			$call_price = (float)$price;
+			$bill_number = $bill;
+		
+			$sql = "UPDATE call_log_tb ";
+			$sql .= "SET total_call_cost = ".$call_price.", ";
+			$sql .= "audit_ack = '".$pay."', bill_number = ".$bill_number." ";
+			$sql .= "WHERE call_log_id = ".$call_log_id;
+			$database->query($sql);			
+			$ses->message('Record Updated');
+		}
+		return;
+	}
+	
+	
+	function isfloat($f){
+		return ($f == (string)(float)$f);
+	}
+	
+	//count the number of record
+	public function number_of_record_user($date_from, $date_to, $user, $operator) {
+		global $database;
+		
+		
+		$sql = "SELECT * ";
+		$sql .= "FROM call_log_tb a, tele_number_tb b, user_info_tb c, location_tb d ";
+		$sql .= "WHERE a.tele_number_id = b.tele_number_id ";
+		$sql .= "AND a.user_info_id = c.user_info_id ";
+		$sql .= "AND b.location_id = d.location_id ";		
+		$sql .= "AND a.call_date >= '".$date_from."-01' ";
+		$sql .= "AND a.call_date <= '".$date_to."-31' ";
+		$sql .= "AND c.local_number = '".$user."' ";
+		$sql .= "AND d.call_type_id ".$operator." 3";
+		$result_set = $database->query($sql);
+		
+		
+//		$sql = "SELECT * FROM call_log_tb a, user_info_tb b ";
+//		$sql .= "WHERE a.user_info_id = b.user_info_id ";
+//		$sql .= "AND a.call_date >= '".$date_from."-01' ";
+//		$sql .= "AND a.call_date <= '".$date_to."-31' ";
+		//$sql .= "AND a.call_purpose = '".$purpose."' ";
+//		$sql .= "AND b.local_number = '".$user."'";
+//		$result_set = $database->query($sql);
+		
+		return $database->num_rows($result_set);
+	}
+	
+	//get all important record
+	public function get_all_data_user($operator, $date_from,$date_to, $user,  $offset) {
+		global $database;
+		
+		$sql = "SELECT a.call_log_id, a.call_date, a.call_finish, a.call_duration, ";
+		$sql .= "a.total_call_cost, b.tele_number, c.local_number, d.location_desc ,a.audit_ack ";
+		$sql .= "FROM call_log_tb a, tele_number_tb b, user_info_tb c, location_tb d ";
+		$sql .= "WHERE a.tele_number_id = b.tele_number_id ";
+		$sql .= "AND a.user_info_id = c.user_info_id ";
+		$sql .= "AND b.location_id = d.location_id ";		
+		$sql .= "AND a.call_date >= '".$date_from."-01' ";
+		$sql .= "AND a.call_date <= '".$date_to."-31' ";
+		$sql .= "AND c.local_number = '".$user."' ";
+		$sql .= "AND d.call_type_id ".$operator." 3 ";
+		$sql .= "ORDER BY a.call_date, a.call_finish ASC LIMIT 20 ";
+		$sql .= "OFFSET ".$offset;
+		$result_set = $database->query($sql);
+		
+		while ($row = mysql_fetch_array($result_set)) {
+			$this->all_made_calls[] = $row;
+		}
+	}	
+}
+?>

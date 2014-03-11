@@ -1,0 +1,405 @@
+<?php require_once ('lib/session.php');?>
+<?php require_once ('lib/helper_functions.php');?>
+<?php require_once ('lib/all_call_record.php');?>
+<?php require_once ('lib/pagination.php');?>
+<?php
+//if if user has auditor acces 
+if ( ($ses->is_logged_in()) && (!$ses->is_audit_logged_in())  ) { 
+	$ses->message("Sorry you do not have Auditor Access.");
+	Helper::redirect_to('user_menu.php'); 
+} else if ( (!$ses->is_logged_in()) && (!$ses->is_admin_logged_in()) && (!$ses->is_audit_logged_in()) ) { 
+	Helper::redirect_to('index.php');
+}
+?>
+<?php 
+$current_page = $_GET['page'];
+$all_call_record = new AllCallRecord();
+$page_all_call_record = new Pagination($current_page, 20, $all_call_record->number_of_record($current_date, $current_call_type));
+$post_message = "";
+if ( $current_page > $page_all_call_record->total_pages()) {
+	Helper::redirect_to('check_all_calls.php?page=1');
+} 
+else {
+	$all_call_record->get_all_data($current_call_type, $current_date, $page_all_call_record->offset());
+	for ($count=0; $count<=19; $count++) {
+		$post_str_ok = 'ok'.$count;
+		$post_str_prc = 'price'.$count;
+		if (isset($_POST[$post_str_ok])) {
+			$pay_status = $all_call_record->all_made_calls[$count]['audit_ack'];
+			if ($pay_status == 'N') {
+				$pay_status = 'Y';
+			} else {
+				$pay_status = 'N';
+				$current_bill = 999;
+			}
+			$post_message = $all_call_record->update_call_record($all_call_record->all_made_calls[$count]['call_log_id'], 
+				$_POST[$post_str_prc], $current_bill, $pay_status);	
+				$str = 	'check_all_calls.php?page='.$current_page;
+				Helper::redirect_to($str);
+			break;
+		} 
+  }
+}
+?>
+<?php Helper::layout_template('head_common.php'); ?>
+	<body>
+			<div id="header">
+				<h1>Call Updating</h1>
+			</div>
+			
+			<div id="content">
+				<div id="content_header">
+					<?php 
+						$message_report = 'Page '.$_GET['page'].' of ';
+						$message_report .= $page_all_call_record->total_pages();
+						echo $message_report; 
+						$message_report = 'Found '.$all_call_record->number_of_record($current_date, $current_call_type).' Total Records';
+						echo "&#09;";
+						echo $message_report; 
+					?>
+				</div>
+				<br />
+				<?php $page_str = "check_all_calls.php?page=".$_GET['page']; 
+				echo "<form action={$page_str} method=\"POST\">";
+				?>
+				<table id="call_view_result" >
+					<?php
+					  echo "<tr>";
+					  	echo "<th>Local Num.</th>";
+					  	echo "<th>Location</th>";		
+					    echo "<th>Call Date</th>";
+					    echo "<th>Time Ended</th>";
+					    echo "<th>Duration</th>";
+					    echo "<th>Tel. Num.</th>";
+					    echo "<th>Price</th>";					    
+					    echo "<th>Update</th>";  
+					    echo "<th>Confirm</th>";
+					  echo "</tr>";
+					  if (isset($all_call_record->all_made_calls[0])) {					  
+					  echo "<tr>";
+					  	echo "<td>{$all_call_record->all_made_calls[0]['local_number']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[0]['location_desc']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[0]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[0]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[0]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[0]['tele_number']}</td>";
+				    	echo "<td><input type=\"text\" name=\"price0\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[0]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok0\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[0]['audit_ack']}</td>";
+						echo "</tr>";
+					  }
+					  if (isset($all_call_record->all_made_calls[1])) {					  
+					  echo "<tr class=\"alt\" >";
+					  	echo "<td>{$all_call_record->all_made_calls[1]['local_number']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[1]['location_desc']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[1]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[1]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[1]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[1]['tele_number']}</td>";
+				    	echo "<td><input type=\"text\" name=\"price1\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[1]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok1\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[1]['audit_ack']}</td>";							
+						echo "</tr>";
+					  }
+					  if (isset($all_call_record->all_made_calls[2])) {					  
+					  echo "<tr>";
+					  	echo "<td>{$all_call_record->all_made_calls[2]['local_number']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[2]['location_desc']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[2]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[2]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[2]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[2]['tele_number']}</td>";
+				    	echo "<td><input type=\"text\" name=\"price2\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[2]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok2\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[2]['audit_ack']}</td>";
+						echo "</tr>";
+					  }
+					  if (isset($all_call_record->all_made_calls[3])) {					  
+					  echo "<tr class=\"alt\" >";
+				    	echo "<td>{$all_call_record->all_made_calls[3]['local_number']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[3]['location_desc']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[3]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[3]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[3]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[3]['tele_number']}</td>";
+				    	echo "<td><input type=\"text\" name=\"price3\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[3]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok3\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[3]['audit_ack']}</td>";
+						echo "</tr>";
+					  }
+					  if (isset($all_call_record->all_made_calls[4])) {					  
+					  echo "<tr>";
+				    	echo "<td>{$all_call_record->all_made_calls[4]['local_number']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[4]['location_desc']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[4]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[4]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[4]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[4]['tele_number']}</td>";
+				    	echo "<td><input type=\"text\" name=\"price4\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[4]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok4\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[4]['audit_ack']}</td>";
+						echo "</tr>";
+					  }
+					  if (isset($all_call_record->all_made_calls[5])) {					  
+					  echo "<tr class=\"alt\" >";
+					  	echo "<td>{$all_call_record->all_made_calls[5]['local_number']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[5]['location_desc']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[5]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[5]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[5]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[5]['tele_number']}</td>";
+				    	echo "<td><input type=\"text\" name=\"price5\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[5]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok5\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[5]['audit_ack']}</td>";
+						echo "</tr>";
+					  }
+					  if (isset($all_call_record->all_made_calls[6])) {					  
+					  echo "<tr>";
+					  	echo "<td>{$all_call_record->all_made_calls[6]['local_number']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[6]['location_desc']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[6]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[6]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[6]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[6]['tele_number']}</td>";
+				    	echo "<td><input type=\"text\" name=\"price6\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[6]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok6\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[6]['audit_ack']}</td>";
+						echo "</tr>";
+					  }
+					  if (isset($all_call_record->all_made_calls[7])) {					  
+					  echo "<tr class=\"alt\" >";
+					  	echo "<td>{$all_call_record->all_made_calls[7]['local_number']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[7]['location_desc']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[7]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[7]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[7]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[7]['tele_number']}</td>";
+				    	echo "<td><input type=\"text\" name=\"price7\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[7]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok7\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[7]['audit_ack']}</td>";
+						echo "</tr>";
+					  }
+					  if (isset($all_call_record->all_made_calls[8])) {					  
+					  echo "<tr>";
+					  	echo "<td>{$all_call_record->all_made_calls[8]['local_number']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[8]['location_desc']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[8]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[8]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[8]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[8]['tele_number']}</td>";
+				    	echo "<td><input type=\"text\" name=\"price8\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[8]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok8\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[8]['audit_ack']}</td>";
+						echo "</tr>";
+					  }
+					  if (isset($all_call_record->all_made_calls[9])) {					  
+					  echo "<tr class=\"alt\" >";
+					  	echo "<td>{$all_call_record->all_made_calls[9]['local_number']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[9]['location_desc']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[9]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[9]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[9]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[9]['tele_number']}</td>";
+				    	echo "<td><input type=\"text\" name=\"price9\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[9]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok9\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[9]['audit_ack']}</td>";
+						echo "</tr>";
+					  }
+					  if (isset($all_call_record->all_made_calls[10])) {					  
+					  echo "<tr>";
+					  	echo "<td>{$all_call_record->all_made_calls[10]['local_number']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[10]['location_desc']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[10]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[10]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[10]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[10]['tele_number']}</td>";
+				    	echo "<td><input type=\"text\" name=\"price10\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[10]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok10\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[10]['audit_ack']}</td>";
+						echo "</tr>";
+					  }
+					  if (isset($all_call_record->all_made_calls[11])) {					  
+					  echo "<tr class=\"alt\" >";
+					  	echo "<td>{$all_call_record->all_made_calls[11]['local_number']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[11]['location_desc']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[11]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[11]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[11]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[11]['tele_number']}</td>";
+				    	echo "<td><input type=\"text\" name=\"price11\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[11]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok11\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[11]['audit_ack']}</td>";
+						echo "</tr>";
+					  }
+					  if (isset($all_call_record->all_made_calls[12])) {					  
+					  echo "<tr>";
+					  	echo "<td>{$all_call_record->all_made_calls[12]['local_number']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[12]['location_desc']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[12]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[12]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[12]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[12]['tele_number']}</td>";
+				    	echo "<td><input type=\"text\" name=\"price12\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[12]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok12\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[12]['audit_ack']}</td>";
+						echo "</tr>";
+					  }
+					  if (isset($all_call_record->all_made_calls[13])) {					  
+					  echo "<tr class=\"alt\" >";
+					  	echo "<td>{$all_call_record->all_made_calls[13]['local_number']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[13]['location_desc']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[13]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[13]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[13]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[13]['tele_number']}</td>";
+				    	echo "<td><input type=\"text\" name=\"price13\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[13]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok13\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[13]['audit_ack']}</td>";
+						echo "</tr>";
+					  }
+					  if (isset($all_call_record->all_made_calls[14])) {					  
+					  echo "<tr>";
+					  	echo "<td>{$all_call_record->all_made_calls[14]['local_number']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[14]['location_desc']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[14]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[14]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[14]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[14]['tele_number']}</td>";
+				    	echo "<td><input type=\"text\" name=\"price14\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[14]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok14\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[14]['audit_ack']}</td>";
+						echo "</tr>";
+					  }
+					  if (isset($all_call_record->all_made_calls[15])) {					  
+					  echo "<tr class=\"alt\" >";
+					  	echo "<td>{$all_call_record->all_made_calls[15]['local_number']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[15]['location_desc']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[15]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[15]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[15]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[15]['tele_number']}</td>";				    	
+				    	echo "<td><input type=\"text\" name=\"price15\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[15]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok15\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[15]['audit_ack']}</td>";
+						echo "</tr>";
+					  }
+					  if (isset($all_call_record->all_made_calls[16])) {					  
+					  echo "<tr>";
+				    	echo "<td>{$all_call_record->all_made_calls[16]['local_number']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[16]['location_desc']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[16]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[16]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[16]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[16]['tele_number']}</td>";
+				    	echo "<td><input type=\"text\" name=\"price16\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[16]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok16\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[16]['audit_ack']}</td>";
+						echo "</tr>";
+					  }
+					  if (isset($all_call_record->all_made_calls[17])) {					  
+					  echo "<tr class=\"alt\" >";
+					  	echo "<td>{$all_call_record->all_made_calls[17]['local_number']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[17]['location_desc']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[17]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[17]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[17]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[17]['tele_number']}</td>";
+				    	echo "<td><input type=\"text\" name=\"price17\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[17]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok17\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[17]['audit_ack']}</td>";
+						echo "</tr>";
+					  }
+					  if (isset($all_call_record->all_made_calls[18])) {					  
+					  echo "<tr>";
+					  	echo "<td>{$all_call_record->all_made_calls[18]['local_number']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[18]['location_desc']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[18]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[18]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[18]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[18]['tele_number']}</td>";
+				    	echo "<td><input type=\"text\" name=\"price18\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[18]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok18\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[18]['audit_ack']}</td>";
+						echo "</tr>";
+					  }
+					  if (isset($all_call_record->all_made_calls[19])) {					  
+					  echo "<tr class=\"alt\" >";
+					  	echo "<td>{$all_call_record->all_made_calls[19]['local_number']}</td>";
+					  	echo "<td>{$all_call_record->all_made_calls[19]['location_desc']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[19]['call_date']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[19]['call_finish']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[19]['call_duration']}</td>";
+				    	echo "<td>{$all_call_record->all_made_calls[19]['tele_number']}</td>";
+				    	echo "<td><input type=\"text\" name=\"price19\" size=\"4\" maxlength=\"7\" 
+				    		value=\"{$all_call_record->all_made_calls[19]['total_call_cost']}\"/></td>";				    	
+						echo "<td><input type=\"submit\" name=\"ok19\" value=\"OK\"/></td>";
+						echo "<td>{$all_call_record->all_made_calls[19]['audit_ack']}</td>";
+						echo "</tr>";
+					  }  
+					?>
+					</table>
+				</form>
+			</div>
+			
+			<div id="task">
+				<br />
+				<a href="http://www.kgjs.no"><img src="stylesheets/kgjs_logo.jpg" /></a>
+				<div id="taskheader">Task</div>	
+				<div id="tasklist">		
+					<ul>
+						<li><a class="taskselection" href="main_menu.php">Return to Main Menu</a></li>
+						<li><a class="taskselection" href="audit_calls.php">Return to Audit Calls</a></li>
+						<br />
+						<li><a class="taskselection" href="logout.php">Logout</a></li>
+					</ul>	
+				</div>	
+				<br />
+				<div class="task_select_head">				
+					<?php 
+					if ($page_all_call_record->has_previous_page()) {
+						$url_page = 'check_all_calls.php';
+						$param = $page_all_call_record->previous_page();
+
+						$url = rawurlencode($url_page);
+						$url .= "?page=".urlencode($param);
+						$selector = "<a class=\"taskselection\" href='".$url."'>&laquo Prev</a>";
+						echo $selector;
+					}
+					?>&nbsp;
+					<?php 
+					if ($page_all_call_record->has_next_page()) {
+						$url_page = 'check_all_calls.php';
+						$param = $page_all_call_record->next_page();
+
+						$url = rawurlencode($url_page);
+						$url .= "?page=".urlencode($param);
+						$selector = "<a class=\"taskselection\" href='".$url."'>Next &raquo</a>";
+						echo $selector;
+					}
+					?>	
+					<br />	
+				</div>	
+				<?php echo Helper::output_message($current_message); ?>
+			</div>
+<?php Helper::layout_template('foot_common.php'); ?>
+<?php unset($all_call_record); ?>
+<?php unset($page_all_call_record); ?>
